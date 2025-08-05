@@ -25,7 +25,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Arbix TP - Velocity Mode"
+title.Text = "Arbix TP - Void Drop"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -41,43 +41,19 @@ tpButton.TextSize = 16
 tpButton.Text = "TP to Delivery"
 Instance.new("UICorner", tpButton).CornerRadius = UDim.new(0, 8)
 
--- 🌀 TP con BodyVelocity
-local function velocityTP(targetPos)
-    local character = Player.Character or Player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
+-- 🌀 Void Drop Teleport
+local function voidDropTeleport(targetPos)
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
-    -- Disattiva collisioni temporaneamente
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
+    local void = CFrame.new(0, -3e38, 0)
+
+    for _ = 1, 3 do
+        hrp.CFrame = void
+        task.wait(0.1)
     end
 
-    -- Calcola direzione
-    local direction = (targetPos - hrp.Position).Unit
-    local distance = (targetPos - hrp.Position).Magnitude
-    local speed = 100
-    local travelTime = distance / speed
-
-    local bv = Instance.new("BodyVelocity")
-    bv.Velocity = direction * speed
-    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-    bv.P = 1e5
-    bv.Parent = hrp
-
-    task.wait(travelTime)
-
-    bv:Destroy()
-
-    -- Posizionamento finale preciso
     hrp.CFrame = CFrame.new(targetPos)
-
-    -- Riattiva collisioni
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-        end
-    end
 end
 
 -- 🎯 Trova la tua DeliveryHitbox
@@ -100,7 +76,7 @@ end
 local function tpToDeliverySafe()
     local target = getDeliveryPosition()
     if target then
-        velocityTP(target)
+        voidDropTeleport(target)
     else
         warn("DeliveryHitbox not found")
     end
