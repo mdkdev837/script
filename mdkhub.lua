@@ -1,6 +1,9 @@
+-- 📦 Servizi
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local Player = Players.LocalPlayer
 
+-- 🧍‍♂️ Aspetta il personaggio
 local function waitForCharacter()
     local char = Player.Character or Player.CharacterAdded:Wait()
     return char:WaitForChild("HumanoidRootPart")
@@ -8,7 +11,7 @@ end
 
 local hrp = waitForCharacter()
 
--- GUI Setup
+-- 🖥️ GUI Setup
 local gui = Instance.new("ScreenGui")
 gui.Name = "ArbixTPGui"
 gui.ResetOnSpawn = false
@@ -25,7 +28,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Arbix TP - Void Drop"
+title.Text = "Arbix TP - Platform Drop"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -41,22 +44,54 @@ tpButton.TextSize = 16
 tpButton.Text = "TP to Delivery"
 Instance.new("UICorner", tpButton).CornerRadius = UDim.new(0, 8)
 
--- 🌀 Void Drop Teleport
-local function voidDropTeleport(targetPos)
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+-- 🚀 Platform TP Invisibile con Effetti
+local function platformTP(targetPos)
+    local hrp = waitForCharacter()
 
-    local void = CFrame.new(0, -3e38, 0)
+    -- Piattaforma invisibile
+    local platform = Instance.new("Part")
+    platform.Size = Vector3.new(4, 0.2, 4)
+    platform.Anchored = true
+    platform.CanCollide = false
+    platform.Transparency = 1
+    platform.Position = hrp.Position - Vector3.new(0, 2, 0)
+    platform.Name = "GhostPlatform"
+    platform.Parent = workspace
 
-    for _ = 1, 3 do
-        hrp.CFrame = void
-        task.wait(0.1)
+    -- Scia magica
+    local trail = Instance.new("Trail")
+    trail.Attachment0 = Instance.new("Attachment", hrp)
+    trail.Attachment1 = Instance.new("Attachment", hrp)
+    trail.Lifetime = 0.5
+    trail.Color = ColorSequence.new(Color3.fromRGB(0, 255, 255), Color3.fromRGB(255, 0, 255))
+    trail.Enabled = true
+    trail.Parent = hrp
+
+    -- Suono
+    local sound = Instance.new("Sound", hrp)
+    sound.SoundId = "rbxassetid://911882310"
+    sound.Volume = 1
+    sound:Play()
+
+    -- Movimento graduale
+    local steps = 60
+    local start = platform.Position
+    for i = 1, steps do
+        local alpha = i / steps
+        platform.Position = start:Lerp(targetPos - Vector3.new(0, 2, 0), alpha)
+        hrp.CFrame = CFrame.new(platform.Position + Vector3.new(0, 2.5, 0))
+        task.wait(0.02)
     end
 
     hrp.CFrame = CFrame.new(targetPos)
+
+    -- Cleanup
+    platform:Destroy()
+    trail:Destroy()
+    sound:Destroy()
 end
 
--- 🎯 Trova la tua DeliveryHitbox
+-- 📦 Trova la DeliveryHitbox
 local function getDeliveryPosition()
     local plots = workspace:FindFirstChild("Plots")
     if not plots then return end
@@ -72,14 +107,15 @@ local function getDeliveryPosition()
     end
 end
 
--- 🧠 TP finale
+-- 🧠 TP finale sicuro
 local function tpToDeliverySafe()
     local target = getDeliveryPosition()
     if target then
-        voidDropTeleport(target)
+        platformTP(target)
     else
         warn("DeliveryHitbox not found")
     end
 end
 
+-- 🎯 Bottone GUI
 tpButton.MouseButton1Click:Connect(tpToDeliverySafe)
