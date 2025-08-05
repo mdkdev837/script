@@ -25,7 +25,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Arbix TP - Safe Mode"
+title.Text = "Arbix TP - Velocity Mode"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -41,21 +41,42 @@ tpButton.TextSize = 16
 tpButton.Text = "TP to Delivery"
 Instance.new("UICorner", tpButton).CornerRadius = UDim.new(0, 8)
 
--- 🌀 Micro-Teleport trapassante
-local function microTeleport(targetPos)
-    local start = hrp.Position
-    local steps = 60
+-- 🌀 TP con BodyVelocity
+local function velocityTP(targetPos)
+    local character = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
 
-    for i = 1, steps do
-        local alpha = i / steps
-        local pos = start:Lerp(targetPos, alpha)
-        pos += Vector3.new(
-            math.random(-1, 1) * 0.0003,
-            math.random(-1, 1) * 0.0003,
-            math.random(-1, 1) * 0.0003
-        )
-        hrp.CFrame = CFrame.new(pos)
-        task.wait(math.random(5, 10) / 1000)
+    -- Disattiva collisioni temporaneamente
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+
+    -- Calcola direzione
+    local direction = (targetPos - hrp.Position).Unit
+    local distance = (targetPos - hrp.Position).Magnitude
+    local speed = 100
+    local travelTime = distance / speed
+
+    local bv = Instance.new("BodyVelocity")
+    bv.Velocity = direction * speed
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.P = 1e5
+    bv.Parent = hrp
+
+    task.wait(travelTime)
+
+    bv:Destroy()
+
+    -- Posizionamento finale preciso
+    hrp.CFrame = CFrame.new(targetPos)
+
+    -- Riattiva collisioni
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
     end
 end
 
@@ -79,7 +100,7 @@ end
 local function tpToDeliverySafe()
     local target = getDeliveryPosition()
     if target then
-        microTeleport(target)
+        velocityTP(target)
     else
         warn("DeliveryHitbox not found")
     end
