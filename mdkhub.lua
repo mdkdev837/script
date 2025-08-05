@@ -44,7 +44,7 @@ tpButton.TextSize = 16
 tpButton.Text = "TP to Delivery"
 Instance.new("UICorner", tpButton).CornerRadius = UDim.new(0, 8)
 
--- 🚀 Platform TP Invisibile con Effetti
+-- 🚀 Platform TP Invisibile con Segmenti
 local function platformTP(targetPos)
     local hrp = waitForCharacter()
 
@@ -73,14 +73,18 @@ local function platformTP(targetPos)
     sound.Volume = 1
     sound:Play()
 
-    -- Movimento graduale
-    local steps = 60
-    local start = platform.Position
+    -- Segmentazione automatica
+    local startPos = platform.Position
+    local distance = (targetPos - startPos).Magnitude
+    local maxStep = 10
+    local steps = math.ceil(distance / maxStep)
+
     for i = 1, steps do
         local alpha = i / steps
-        platform.Position = start:Lerp(targetPos - Vector3.new(0, 2, 0), alpha)
-        hrp.CFrame = CFrame.new(platform.Position + Vector3.new(0, 2.5, 0))
-        task.wait(0.02)
+        local nextPos = startPos:Lerp(targetPos - Vector3.new(0, 2, 0), alpha)
+        platform.Position = nextPos
+        hrp.CFrame = CFrame.new(nextPos + Vector3.new(0, 2.5, 0))
+        task.wait(0.03)
     end
 
     hrp.CFrame = CFrame.new(targetPos)
