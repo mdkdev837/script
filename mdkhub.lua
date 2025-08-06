@@ -120,7 +120,7 @@ end
 -- Micro TP jitterato
 local function microJitterStep()
     local camera = workspace.CurrentCamera
-    local forward = camera.CFrame.LookVector.Unit * 0.4
+    local forward = camera.CFrame.LookVector.Unit * 0.1
     local jitter = Vector3.new(
         math.random(-1,1)*0.2,
         0,
