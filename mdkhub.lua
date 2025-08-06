@@ -126,7 +126,7 @@ local function microJitterStep()
         0,
         math.random(-1,1)*0.2
     )
-    hrp.CFrame = hrp.CFrame + forward + jitter
+    hrp.CFrame = hrp.CFrame + forward
 end
 
 -- Bottone GUI
